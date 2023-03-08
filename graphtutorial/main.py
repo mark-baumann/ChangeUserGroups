@@ -6,7 +6,6 @@ import configparser
 import graph
 import tkinter as tk
 
-
 def main():
     print('Python Graph Tutorial\n')
 
@@ -24,11 +23,54 @@ def main():
     
     groups = Groups()
     groups.list_groups()
-    
-    window = tk.Tk()
-    window.title("My Graph GUI")
-    window.mainloop()
+
+
+    root = tk.Tk()
+    app = GraphGUI(root)
+    root.mainloop()
+
+
 # </ProgramSnippet>
+
+
+class GraphGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Exchange Verteilerpflege")
+        # Create a frame to hold the list of users
+        # Create the user list box
+        self.user_frame = tk.Frame(self.root)
+        self.user_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.user_label = tk.Label(self.user_frame, text="Users")
+        self.user_label.pack(side=tk.TOP, padx=5, pady=5)
+        self.user_scrollbar = tk.Scrollbar(self.user_frame, orient=tk.VERTICAL)
+        self.user_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.user_listbox = tk.Listbox(self.user_frame, yscrollcommand=self.user_scrollbar.set)
+        self.user_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.user_scrollbar.config(command=self.user_listbox.yview)
+
+        # Create the group list box
+        self.group_frame = tk.Frame(self.root)
+        self.group_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.group_label = tk.Label(self.group_frame, text="Groups")
+        self.group_label.pack(side=tk.TOP, padx=5, pady=5)
+        self.group_scrollbar = tk.Scrollbar(self.group_frame, orient=tk.VERTICAL)
+        self.group_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.group_listbox = tk.Listbox(self.group_frame, yscrollcommand=self.group_scrollbar.set)
+        self.group_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.group_scrollbar.config(command=self.group_listbox.yview)
+
+        # Add users to the list box
+        users = Users()
+        users.list_users()
+        for user in users.all_users:
+            self.user_listbox.insert(tk.END, user['displayName'])
+
+        # Add groups to the list box
+        groups = Groups()
+        groups.list_groups()
+        for group in groups.all_groups:
+            self.group_listbox.insert(tk.END, group['displayName'])
 
 
 class Groups:
@@ -45,7 +87,7 @@ class Groups:
     #</ListGroupSnippet>
 
 class Users:
-    all_groups = []
+    all_users = []
     # <ListUsersSnippet>
     def list_users(self):
         self.all_users = graph.get_all_users()
