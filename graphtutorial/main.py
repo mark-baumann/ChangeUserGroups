@@ -4,6 +4,8 @@
 # <ProgramSnippet>
 import configparser
 import graph
+import tkinter as tk
+
 
 def main():
     print('Python Graph Tutorial\n')
@@ -12,14 +14,51 @@ def main():
     config = configparser.ConfigParser()
     config.read(['config.cfg', 'config.dev.cfg'])
     azureSettings = config['azure']
-
-    initialize_graph(azureSettings)
-
-    greet_user()
-    list_users()
-    list_groups()
     
+    initialize_graph(azureSettings)
+    
+    greet_user()
+    
+    users = Users()
+    users.list_users()
+    
+    groups = Groups()
+    groups.list_groups()
+    
+    window = tk.Tk()
+    window.title("My Graph GUI")
+    window.mainloop()
 # </ProgramSnippet>
+
+
+class Groups:
+# <ListGroupSnippet>
+    all_groups = []
+    def list_groups(self):
+        self.all_groups = graph.get_all_groups()
+        
+        for group in self.all_groups:
+            print('Group:', group['displayName'])
+            print('  ID:', group['id'])
+            
+        print('\nTotal groups', len(self.all_groups))
+    #</ListGroupSnippet>
+
+class Users:
+    all_groups = []
+    # <ListUsersSnippet>
+    def list_users(self):
+        self.all_users = graph.get_all_users()
+
+        # Output each users's details
+        for user in self.all_users:
+            print('User:', user['displayName'])
+            print('  ID:', user['id'])
+            print('  Email:', user['mail'])
+
+        print('\nTotal users:', len(self.all_users))
+    # </ListUsersSnippet>
+
 
 # <InitializeGraphSnippet>
 def initialize_graph(settings: configparser.SectionProxy):
@@ -35,70 +74,6 @@ def greet_user():
     print('Email:', user['mail'] or user['userPrincipalName'], '\n')
 # </GreetUserSnippet>
 
-# <DisplayAccessTokenSnippet>
-def display_access_token():
-    token = graph.get_user_token()
-    print('User token:', token, '\n')
-# </DisplayAccessTokenSnippet>
-
-# <ListInboxSnippet>
-def list_inbox():
-    message_page = graph.get_inbox()
-
-    # Output each message's details
-    for message in message_page['value']:
-        print('Message:', message['subject'])
-        print('  From:', message['from']['emailAddress']['name'])
-        print('  Status:', 'Read' if message['isRead'] else 'Unread')
-        print('  Received:', message['receivedDateTime'])
-
-    # If @odata.nextLink is present
-    more_available = '@odata.nextLink' in message_page
-    print('\nMore messages available?', more_available, '\n')
-# </ListInboxSnippet>
-
-# <SendMailSnippet>
-def send_mail():
-    # Send mail to the signed-in user
-    # Get the user for their email address
-    user = graph.get_user()
-    user_email = user['mail'] or user['userPrincipalName']
-
-    graph.send_mail('Testing Microsoft Graph', 'Hello world!', user_email)
-    print('Mail sent.\n')
-    return
-# </SendMailSnippet>
-
-# <ListGroupSnippet>
-
-def list_groups():
-    all_groups = graph.get_all_groups()
-    
-    for group in all_groups:
-        print('Group:', group['displayName'])
-        print('  ID:', group['id'])
-        
-    print('\nTotal groups', len(all_groups))
-
-#</ListGroupSnippet>
-
-# <ListUsersSnippet>
-def list_users():
-    all_users = graph.get_all_users()
-
-    # Output each users's details
-    for user in all_users:
-        print('User:', user['displayName'])
-        print('  ID:', user['id'])
-        print('  Email:', user['mail'])
-
-    print('\nTotal users:', len(all_users))
-# </ListUsersSnippet>
-
-# <MakeGraphCallSnippet>
-def make_graph_call():
-    graph.make_graph_call()
-# </MakeGraphCallSnippet>
 
 # Run main
 main()
