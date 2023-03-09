@@ -168,3 +168,17 @@ def make_graph_call():
     # ensure_graph_for_app_only_auth()
     return
 # </MakeGraphCallSnippet>
+
+
+def add_member_to_group(user_id, group_id):
+
+    ensure_graph_for_app_only_auth()
+
+    url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members/$ref"
+    headers = {"Content-Type": "application/json"}
+    data = {"@odata.id": f"https://graph.microsoft.com/v1.0/directoryObjects/{user_id}"}
+    response = this.app_client.post(url, headers=headers, json=data)
+    if response.status_code == 204:
+        print(f'Successfully added user {user_id} to group {group_id}.')
+    else:
+        print('Error:', response.content)

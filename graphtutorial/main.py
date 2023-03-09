@@ -37,41 +37,80 @@ class GraphGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Exchange Verteilerpflege")
-        # Create a frame to hold the list of users
-        # Create the user list box
-        self.user_frame = tk.Frame(self.root)
-        self.user_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.user_label = tk.Label(self.user_frame, text="Users")
-        self.user_label.pack(side=tk.TOP, padx=5, pady=5)
-        self.user_scrollbar = tk.Scrollbar(self.user_frame, orient=tk.VERTICAL)
-        self.user_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.user_listbox = tk.Listbox(self.user_frame, yscrollcommand=self.user_scrollbar.set)
-        self.user_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.user_scrollbar.config(command=self.user_listbox.yview)
+        self.root.geometry("1000x1000")
 
-        # Create the group list box
-        self.group_frame = tk.Frame(self.root)
-        self.group_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-        self.group_label = tk.Label(self.group_frame, text="Groups")
-        self.group_label.pack(side=tk.TOP, padx=5, pady=5)
-        self.group_scrollbar = tk.Scrollbar(self.group_frame, orient=tk.VERTICAL)
-        self.group_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.group_listbox = tk.Listbox(self.group_frame, yscrollcommand=self.group_scrollbar.set)
-        self.group_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.group_scrollbar.config(command=self.group_listbox.yview)
+        # Create a frame to hold the user and group dropdowns
+        self.dropdown_frame = tk.Frame(self.root)
+        self.dropdown_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        # Add users to the list box
-        users = Users()
-        users.list_users()
-        for user in users.all_users:
-            self.user_listbox.insert(tk.END, user['displayName'])
+        # Create the user dropdown
+        self.user_label = tk.Label(self.dropdown_frame, text="User")
+        self.user_label.pack(side=tk.LEFT, padx=5, pady=5)
+        self.user_var = tk.StringVar(self.dropdown_frame)
+        self.user_dropdown = tk.OptionMenu(self.dropdown_frame, self.user_var, '')
+        self.user_dropdown.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Add groups to the list box
-        groups = Groups()
-        groups.list_groups()
-        for group in groups.all_groups:
-            self.group_listbox.insert(tk.END, group['displayName'])
+        # Create the group dropdown
+        self.group_label = tk.Label(self.dropdown_frame, text="Group")
+        self.group_label.pack(side=tk.LEFT, padx=5, pady=5)
+        self.group_var = tk.StringVar(self.dropdown_frame)
+        self.group_dropdown = tk.OptionMenu(self.dropdown_frame, self.group_var, '')
+        self.group_dropdown.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        # Add users to the user dropdown
+        self.users = Users()
+        self.users.list_users()
+        user_options = []
+        for user in self.users.all_users:
+            user_options.append(user['displayName'])
+        self.user_dropdown['menu'].delete(0, tk.END)
+        for option in user_options:
+            self.user_dropdown['menu'].add_command(label=option, command=tk._setit(self.user_var, option))
+
+        # Add groups to the group dropdown
+        self.groups = Groups()
+        self.groups.list_groups()
+        group_options = []
+        for group in self.groups.all_groups:
+            group_options.append(group['displayName'])
+        self.group_dropdown['menu'].delete(0, tk.END)
+        for option in group_options:
+            self.group_dropdown['menu'].add_command(label=option, command=tk._setit(self.group_var, option))
+
+        # Create a frame to hold the Add and Delete buttons
+        self.button_frame = tk.Frame(self.root)
+        self.button_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        # Create the Add button
+        self.add_button = tk.Button(self.button_frame, text="Add", command=self.add_user_to_group)
+        self.add_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+        # Create the Delete button
+        self.delete_button = tk.Button(self.button_frame, text="Delete", command=self.remove_user_from_group)
+        self.delete_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    def add_user_to_group(self):
+        user_name = self.user_var.get()
+        group_name = self.group_var.get()
+        user_id = ''
+        group_id = ''
+        for user in self.users.all_users:
+            if user['displayName'] == user_name:
+                user_id = user['id']
+                break
+        for group in self.groups.all_groups:
+            if group['displayName'] == group_name:
+                print(group['displayName'])
+                group_id = group['id']
+                break
+        if user_id and group_id:
+            graph.add_member_to_group(user_id, group_id)
+            print(f"Added user {user_name} ({user_id}) to group {group_name} ({group_id})")
+        else:
+            print("Could not find user or group")
+            
+    def remove_user_from_group(self):
+        pass
 
 class Groups:
 # <ListGroupSnippet>
